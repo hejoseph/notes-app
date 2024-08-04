@@ -17,6 +17,14 @@ const Login = () => {
             setError("Please enter a valid email address.");
             return;
         }
+
+        if(!password){
+            setError("Please enter the password")
+            return;
+        }
+
+        setError("");
+        //Login Api call
     };
 
     return (
