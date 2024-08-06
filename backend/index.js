@@ -153,35 +153,27 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 });
 
 app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
-  let debug = "";
   const noteId = req.params.noteId;
   const { title, content, tags , isPinned} = req.body;
   const { user } = req.user;
 
-  debug = "160";
   if (!title && !content && !tags) {
     return res
       .status(400)
       .json({ error: true, message: "No changes provided" });
   }
-  debug = "167"
   try {
     const note = await Note.findOne({ _id: noteId, userId: user._id });
-    debug = "170 "+noteId+ " "+user._id;
     if (!note) {
       return res.status(404).json({ error: true, message: "Note not found" });
     }
-
-    debug = "175"
 
     if (title) note.title = title;
     if (content) note.content = content;
     if (tags) note.tags = tags;
     if (isPinned) note.isPinned = isPinned;
 
-    debug = "182"
     await note.save();
-    debug = "184"
     return res.json({
       error: false,
       note,
@@ -190,10 +182,29 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: true,
-      message: "Internal Server Error " + debug
+      message: "Internal Server Error "
     });
   }
+});
 
+app.get("/get-all-notes", authenticateToken, async (req, res) => {
+  const {user} = req.user;
+
+  try{
+    const notes = await Note.find({userId: user._id}).sort({isPinned: -1});
+
+    return res
+      .json({
+        error: false,
+        notes,
+        message: "All notes retrieved successfully"
+      });
+  }catch(error){
+    return res.status(500).json({
+      error: true,
+      message: "Internal Server Error"
+    });
+  }
 });
 
 app.listen(8000);
