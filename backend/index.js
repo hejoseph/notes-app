@@ -1,21 +1,21 @@
 require("dotenv").config();
 
-import { connectionString } from "./config.json";
-import { connect } from "mongoose";
+const config = require("./config.json");
+const mongoose = require("mongoose");
 
-connect(connectionString);
+mongoose.connect(config.connectionString);
 
-import User, { findOne } from "./models/user.model";
-import Note, { findOne as _findOne } from "./models/note.model";
+const User = require("./models/user.model");
+const Note = require("./models/note.model");
 
-import express, { json } from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
+
+
+const jwt = require("jsonwebtoken");
+const { authenticateToken } = require("./utilities");
 const app = express();
-
-import { sign } from "jsonwebtoken";
-import { authenticateToken } from "./utilities";
-
-app.use(json());
+app.use(express.json());
 
 app.use(
   cors({
@@ -50,7 +50,7 @@ app.post("/create-account", async (req, res) => {
       .json({ error: true, message: "Password is required" });
   }
 
-  const isUser = await findOne({ email: email });
+  const isUser = await User.findOne({ email: email });
   if (isUser) {
     return res
       .json({ error: true, message: "User already exists" });
@@ -62,7 +62,7 @@ app.post("/create-account", async (req, res) => {
 
   await user.save();
 
-  const accessToken = sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
+  const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "36000m",
   });
 
@@ -86,7 +86,7 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Password is required" });
   }
 
-  const userInfo = await findOne({ email: email });
+  const userInfo = await User.findOne({ email: email });
 
   if (!userInfo) {
     return res.status(400).json({ message: "User not found" });
@@ -94,7 +94,7 @@ app.post("/login", async (req, res) => {
 
   if (userInfo.email == email && userInfo.password == password) {
     const user = { user: userInfo };
-    const accessToken = sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "36000m"
     });
 
@@ -166,7 +166,7 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
   }
   debug = "167"
   try {
-    const note = await _findOne({ _id: noteId, userId: user._id });
+    const note = await Note.findOne({ _id: noteId, userId: user._id });
     debug = "170 "+noteId+ " "+user._id;
     if (!note) {
       return res.status(404).json({ error: true, message: "Note not found" });
@@ -198,4 +198,4 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
 
 app.listen(8000);
 
-export default app;
+module.exports = app;
