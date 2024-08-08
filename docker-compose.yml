@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  notes-front-app:
+    container_name: notes-front-app
+    build:
+      context: ./frontend/notes-app
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - notes-api
+
+  mongo-local:
+    image: mongo:latest
+    container_name: mongo-local
+    ports:
+      - "27017:27017"
+
+  notes-api:
+    image: notes-api
+    build: ./backend/
+    container_name: notes-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo-local
