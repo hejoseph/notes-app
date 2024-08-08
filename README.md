@@ -98,7 +98,7 @@ To get started with the app, follow these steps:
 
 ## Screenshots
 
-Here are some screenshots of the NoteNest application:
+Here are some screenshots of the application:
 
 ### Login Page
 ![Login Page](assets/images/login-page.png)
