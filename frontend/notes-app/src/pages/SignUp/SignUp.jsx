@@ -43,7 +43,7 @@ const SignUp = () => {
           });
     
           if (response.data && response.data.error) {
-            setError(response.data.error);
+            setError(response.data.message);
             return;
           }
 
